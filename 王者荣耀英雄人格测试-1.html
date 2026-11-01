@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>测测你是王者荣耀中的哪个英雄</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    background: radial-gradient(ellipse at 50% -10%, #1a2a5e 0%, #0d1330 45%, #070b1d 100%);
+    color:#f4e9c8; min-height:100vh; overflow-x:hidden;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(64,150,255,.12), transparent 40%),
+      radial-gradient(circle at 85% 70%, rgba(255,180,60,.08), transparent 40%);
+  }
+  .page { position:relative; max-width:480px; margin:0 auto; padding:0 20px 40px; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* ---------- 开始页 ---------- */
+  #screen-start { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding-top:8vh; }
+  .logo-badge {
+    width:92px; height:92px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #ffe9a3, #d4a017 55%, #8a5a00);
+    display:flex; align-items:center; justify-content:center;
+    font-size:44px; box-shadow:0 0 40px rgba(255,200,80,.45), inset 0 0 12px rgba(255,255,255,.5);
+    margin-bottom:22px; animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  h1.title {
+    font-size:30px; letter-spacing:2px; line-height:1.4;
+    background: linear-gradient(180deg,#fff6d8 0%, #ffd76a 55%, #c9922a 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 20px rgba(255,200,80,.15); margin-bottom:14px;
+  }
+  .subtitle { font-size:14px; color:#9fb3e8; letter-spacing:1px; margin-bottom:30px; line-height:1.9; }
+  .subtitle b { color:#ffd76a; }
+  .hero-strip { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:34px; }
+  .hero-chip {
+    font-size:12px; padding:5px 10px; border-radius:20px;
+    background:rgba(255,215,106,.08); border:1px solid rgba(255,215,106,.35); color:#e8d9a8;
+  }
+  .btn-main {
+    width:78%; max-width:300px; padding:15px 0; font-size:18px; font-weight:bold; letter-spacing:6px;
+    color:#3a2400; border:none; border-radius:40px; cursor:pointer;
+    background: linear-gradient(180deg,#ffe9a3,#f5b73d 60%,#d99a1b);
+    box-shadow:0 6px 24px rgba(245,183,61,.4), inset 0 2px 0 rgba(255,255,255,.6);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .btn-main:active { transform:scale(.96); }
+  .tip { margin-top:18px; font-size:12px; color:#6f7fb0; }
+
+  /* ---------- 答题页 ---------- */
+  #screen-quiz { display:none; padding-top:5vh; }
+  .progress-wrap { display:flex; align-items:center; gap:10px; margin-bottom:22px; }
+  .progress-num { font-size:13px; color:#ffd76a; white-space:nowrap; font-weight:bold; }
+  .progress-bar { flex:1; height:8px; border-radius:6px; background:rgba(255,255,255,.1); overflow:hidden; }
+  .progress-fill { height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg,#4a90ff,#ffd76a); transition:width .4s ease; }
+  .q-card {
+    background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    border:1px solid rgba(255,215,106,.25); border-radius:18px; padding:24px 20px;
+    box-shadow:0 10px 40px rgba(0,0,0,.35);
+  }
+  .q-title { font-size:18px; font-weight:bold; line-height:1.6; color:#fff3d0; margin-bottom:20px; }
+  .opt {
+    display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+    padding:14px 16px; margin-bottom:12px; border-radius:14px; cursor:pointer;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+    color:#e6ecff; font-size:15px; line-height:1.5; transition:all .15s;
+  }
+  .opt:last-child { margin-bottom:0; }
+  .opt:active { background:rgba(255,215,106,.15); border-color:rgba(255,215,106,.6); transform:scale(.98); }
+  .opt .key {
+    flex:none; width:26px; height:26px; border-radius:50%;
+    background:linear-gradient(180deg,#4a90ff,#2a5fc0); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold;
+  }
+
+  /* ---------- 结果页 ---------- */
+  #screen-result { display:none; padding-top:5vh; text-align:center; }
+  .result-tag { font-size:13px; color:#9fb3e8; letter-spacing:3px; margin-bottom:8px; }
+  .result-name {
+    font-size:42px; font-weight:bold; letter-spacing:4px; margin-bottom:4px;
+    background:linear-gradient(180deg,#fff6d8,#ffd76a 60%,#c9922a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation: pop .5s ease;
+  }
+  @keyframes pop { 0%{transform:scale(.6);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  .result-title { font-size:15px; color:#ffd76a; letter-spacing:2px; margin-bottom:20px; }
+  .result-role {
+    display:inline-block; font-size:12px; padding:5px 14px; border-radius:20px; margin-bottom:24px;
+    background:rgba(74,144,255,.15); border:1px solid rgba(74,144,255,.5); color:#a8c6ff; letter-spacing:1px;
+  }
+  .match-box { margin-bottom:22px; }
+  .match-pct { font-size:15px; color:#fff3d0; margin-bottom:8px; }
+  .match-pct b { font-size:24px; color:#ffd76a; }
+  .match-bar { height:10px; border-radius:6px; background:rgba(255,255,255,.1); overflow:hidden; max-width:300px; margin:0 auto; }
+  .match-fill { height:100%; width:0%; border-radius:6px; background:linear-gradient(90deg,#ffd76a,#ff9d3c); transition:width 1.2s cubic-bezier(.2,.8,.2,1); }
+  .result-desc {
+    font-size:14px; line-height:2; color:#d5defa; text-align:justify;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+    border-radius:14px; padding:18px; margin-bottom:20px;
+  }
+  .traits { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:26px; }
+  .trait { font-size:12px; padding:5px 12px; border-radius:16px; background:rgba(255,215,106,.12); border:1px solid rgba(255,215,106,.4); color:#ffe9a3; }
+  .rank-list { text-align:left; max-width:320px; margin:0 auto 28px; }
+  .rank-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:13px; }
+  .rank-row .rk { flex:none; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,.12); color:#cfd9f5; display:flex; align-items:center; justify-content:center; font-size:11px; }
+  .rank-row.first .rk { background:linear-gradient(180deg,#ffe9a3,#d4a017); color:#3a2400; font-weight:bold; }
+  .rank-row .rn { flex:none; width:64px; color:#e6ecff; }
+  .rank-row .rb { flex:1; height:6px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; }
+  .rank-row .rf { height:100%; border-radius:4px; background:linear-gradient(90deg,#4a90ff,#7ab5ff); width:0%; transition:width 1s ease; }
+  .rank-row.first .rf { background:linear-gradient(90deg,#ffd76a,#ff9d3c); }
+  .rank-row .rs { flex:none; width:32px; text-align:right; color:#9fb3e8; }
+  .btn-ghost {
+    padding:12px 0; width:60%; max-width:240px; font-size:15px; letter-spacing:3px; cursor:pointer;
+    color:#ffd76a; background:transparent; border:1px solid rgba(255,215,106,.5); border-radius:30px;
+    transition:background .15s;
+  }
+  .btn-ghost:active { background:rgba(255,215,106,.12); }
+  .share-hint { margin-top:16px; font-size:12px; color:#6f7fb0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 开始页 -->
+  <section id="screen-start">
+    <div class="logo-badge">⚔️</div>
+    <h1 class="title">测测你是王者荣耀<br>中的哪个英雄</h1>
+    <p class="subtitle">10道灵魂拷问 · 根据你的<b>性格</b>与<b>处事选择</b><br>匹配峡谷中最像你的英雄人设</p>
+    <div class="hero-strip">
+      <span class="hero-chip">亚瑟</span><span class="hero-chip">妲己</span>
+      <span class="hero-chip">李白</span><span class="hero-chip">鲁班七号</span>
+      <span class="hero-chip">貂蝉</span><span class="hero-chip">项羽</span>
+      <span class="hero-chip">赵云</span><span class="hero-chip">孙尚香</span>
+    </div>
+    <button class="btn-main" onclick="startQuiz()">开始测试</button>
+    <p class="tip">凭直觉作答，结果更准确</p>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="screen-quiz">
+    <div class="progress-wrap">
+      <span class="progress-num" id="progressNum">1 / 10</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-title" id="qTitle"></div>
+      <div id="optBox"></div>
+    </div>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="screen-result">
+    <p class="result-tag">峡谷人格鉴定结果</p>
+    <div class="result-name" id="rName"></div>
+    <div class="result-title" id="rTitle"></div>
+    <div class="result-role" id="rRole"></div>
+    <div class="match-box">
+      <p class="match-pct">灵魂契合度 <b id="rPct">0%</b></p>
+      <div class="match-bar"><div class="match-fill" id="rFill"></div></div>
+    </div>
+    <div class="result-desc" id="rDesc"></div>
+    <div class="traits" id="rTraits"></div>
+    <div class="rank-list" id="rRank"></div>
+    <button class="btn-main" style="letter-spacing:3px;font-size:15px;" onclick="restart()">再测一次</button>
+    <p class="share-hint">📸 截图保存你的本命英雄，分享给开黑好友吧</p>
+  </section>
+
+</div>
+
+<script>
+/* ================= 题库：题目后绝不出现英雄答案 ================= */
+const QUESTIONS = [
+  { q:"周末朋友突然喊你开黑，你的第一反应是？",
+    opts:[
+      { t:"秒上线！兄弟们的局必须到场", h:"亚瑟" },
+      { t:"先看阵容，我来carry全场", h:"貂蝉" },
+      { t:"开黑？正好秀一把我的绝活", h:"李白" },
+      { t:"来来来，我负责搞笑活跃气氛", h:"鲁班七号" } ] },
+  { q:"团队项目突然出危机，你的第一反应是？",
+    opts:[
+      { t:"稳住别慌，冷静分析找最优解", h:"赵云" },
+      { t:"责任我来扛，先保住队友", h:"亚瑟" },
+      { t:"发挥魅力，四处协调资源", h:"貂蝉" },
+      { t:"撸起袖子直接上，干就完了", h:"孙尚香" } ] },
+  { q:"陌生人在路上向你求助，你会？",
+    opts:[
+      { t:"先观察情况，确保稳妥再帮", h:"赵云" },
+      { t:"二话不说，能帮就帮", h:"亚瑟" },
+      { t:"热情帮忙，顺便唠上两句", h:"鲁班七号" },
+      { t:"大方出手，帮就帮到底", h:"项羽" } ] },
+  { q:"你最向往哪种旅行方式？",
+    opts:[
+      { t:"一个人当背包客，走到哪算哪", h:"李白" },
+      { t:"打卡出片，做朋友圈最靓的仔", h:"貂蝉" },
+      { t:"攀岩跳伞，专挑极限挑战", h:"孙尚香" },
+      { t:"豪华游，全程VIP待遇安排", h:"项羽" } ] },
+  { q:"和朋友产生分歧时，你倾向于？",
+    opts:[
+      { t:"摆事实讲道理，用逻辑说话", h:"赵云" },
+      { t:"嘻嘻哈哈，先把气氛缓和了", h:"鲁班七号" },
+      { t:"坚持己见，谁也别想说服我", h:"项羽" },
+      { t:"换位思考，各退一步海阔天空", h:"妲己" } ] },
+  { q:"你理想中的生活节奏是？",
+    opts:[
+      { t:"灵感驱动，想干就干想睡就睡", h:"李白" },
+      { t:"稳定规律，按部就班有安全感", h:"妲己" },
+      { t:"每天都有新挑战才带劲", h:"孙尚香" },
+      { t:"日程满档，忙碌并优雅着", h:"貂蝉" } ] },
+  { q:"面对一项超难的任务，你的状态是？",
+    opts:[
+      { t:"拆解成小目标，步步为营推进", h:"赵云" },
+      { t:"越难越兴奋，正面硬刚到底", h:"项羽" },
+      { t:"拉个群，组队一起攻克", h:"鲁班七号" },
+      { t:"琢磨最优路径，一击制胜", h:"妲己" } ] },
+  { q:"你最希望听到别人这样评价你？",
+    opts:[
+      { t:"「TA真的好可靠，有事找TA」", h:"亚瑟" },
+      { t:"「TA魅力四射，全场焦点」", h:"貂蝉" },
+      { t:"「TA是深藏不露的高手」", h:"李白" },
+      { t:"「TA是行走的小太阳」", h:"孙尚香" } ] },
+  { q:"意外收到一笔奖金，你会？",
+    opts:[
+      { t:"投资自己，学点新技能", h:"妲己" },
+      { t:"请朋友们搓一顿大餐", h:"鲁班七号" },
+      { t:"拿下惦记很久的心动大件", h:"孙尚香" },
+      { t:"存起来，以备不时之需", h:"赵云" } ] },
+  { q:"深夜情绪低落时，你会？",
+    opts:[
+      { t:"独自出去走走，吹吹风消化", h:"李白" },
+      { t:"找信任的人倾诉吐槽", h:"妲己" },
+      { t:"睡一觉，明天又是新的一天", h:"亚瑟" },
+      { t:"开几把游戏，用胜利发泄", h:"项羽" } ] }
+];
+
+/* ================= 英雄结果库（真实英雄池） ================= */
+const HEROES = {
+  "亚瑟": { title:"圣骑之力", role:"对抗路 · 坦克", traits:["正直可靠","守护担当","团队之盾"],
+    desc:"你是队伍里最让人安心的存在。正义感满格，答应的事一定做到；朋友有难，你永远是第一个站出来挡在前面的人。你不抢风头，但没有你，整个团队都少了主心骨。" },
+  "妲己": { title:"魅力之狐", role:"中路 · 法师", traits:["机敏灵动","社交达人","温柔有谋略"],
+    desc:"你头脑灵活、反应超快，擅长用巧劲解决问题。外表温柔无害，实则心里门儿清，总能在关键时刻给出最妙的一击，是团队里隐藏的智囊。" },
+  "李白": { title:"青莲剑仙", role:"打野 · 刺客", traits:["潇洒不羁","才华横溢","独来独往"],
+    desc:"你向往自由，讨厌被条条框框束缚，才华是你的佩剑。你享受独处的清醒，也享受登场时的惊艳——平时不显山露水，一出手就是全场高光。" },
+  "鲁班七号": { title:"机关造物", role:"发育路 · 射手", traits:["乐天搞怪","气氛担当","鬼点子多"],
+    desc:"你是行走的开心果，走到哪笑声就到哪。你点子多、爱折腾，看似嘻嘻哈哈，真干起活来创意满分，团队里少了你，连空气都会安静三分。" },
+  "貂蝉": { title:"绝世舞姬", role:"中路 · 法师", traits:["优雅自信","控场女王","魅力四射"],
+    desc:"你天生自带气场，进退有度、八面玲珑。无论多复杂的场面，你都能优雅控场，让所有人不自觉被你吸引——你站的地方，就是舞台中央。" },
+  "项羽": { title:"西楚霸王", role:"对抗路 · 坦克", traits:["霸气果敢","永不言败","豪爽仗义"],
+    desc:"你骨子里有不服输的劲儿，认定的事十头牛都拉不回。你讲义气、出手阔绰，宁可正面硬刚也绝不退缩，是天生的带头大哥。" },
+  "赵云": { title:"龙胆", role:"打野 · 战士", traits:["沉着冷静","靠谱务实","深藏不露"],
+    desc:"你是低调的实力派，大事面前从不慌乱，总能把复杂的问题拆解得井井有条。话不多，但每件事都办得漂亮——「靠谱」是你的代名词。" },
+  "孙尚香": { title:"千金重弩", role:"发育路 · 射手", traits:["直爽火辣","行动力MAX","敢爱敢恨"],
+    desc:"你风风火火、直来直去，想到就做，从不拖泥带水。你能量满格、敢闯敢拼，喜欢一切新鲜刺激的事物，是身边人公认的「行动派一姐/哥」。" }
+};
+
+const TOTAL = QUESTIONS.length;
+let idx = 0;
+let scores = {};
+
+function startQuiz(){
+  idx = 0;
+  scores = {};
+  Object.keys(HEROES).forEach(k => scores[k] = 0);
+  document.getElementById('screen-start').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const item = QUESTIONS[idx];
+  document.getElementById('progressNum').textContent = (idx+1) + ' / ' + TOTAL;
+  document.getElementById('progressFill').style.width = (idx / TOTAL * 100) + '%';
+  document.getElementById('qTitle').textContent = (idx+1) + '. ' + item.q;
+  const box = document.getElementById('optBox');
+  box.innerHTML = '';
+  const keys = ['A','B','C','D'];
+  item.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="key">' + keys[i] + '</span><span>' + o.t + '</span>';
+    btn.onclick = () => choose(o.h);
+    box.appendChild(btn);
+  });
+}
+
+function choose(hero){
+  scores[hero] += 3;   /* 每题主归属 +3 分 */
+  idx++;
+  if (idx < TOTAL) { renderQuestion(); }
+  else { showResult(); }
+}
+
+function showResult(){
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  const ranked = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
+  const top = ranked[0];
+  const info = HEROES[top];
+  const maxScore = TOTAL * 3;
+
+  document.getElementById('rName').textContent = top;
+  document.getElementById('rTitle').textContent = '「' + info.title + '」';
+  document.getElementById('rRole').textContent = info.role;
+  document.getElementById('rDesc').textContent = info.desc;
+  document.getElementById('rTraits').innerHTML = info.traits.map(t => '<span class="trait">' + t + '</span>').join('');
+
+  const pct = Math.round(60 + (scores[top] / maxScore) * 38);
+  const pctEl = document.getElementById('rPct');
+  pctEl.textContent = '0%';
+  document.getElementById('rFill').style.width = '0%';
+  setTimeout(() => {
+    document.getElementById('rFill').style.width = pct + '%';
+    let cur = 0;
+    const timer = setInterval(() => {
+      cur += 2;
+      if (cur >= pct) { cur = pct; clearInterval(timer); }
+      pctEl.textContent = cur + '%';
+    }, 24);
+  }, 200);
+
+  /* Top3 榜单 */
+  const rankBox = document.getElementById('rRank');
+  rankBox.innerHTML = '';
+  ranked.slice(0,3).forEach((name, i) => {
+    const w = Math.round(scores[name] / scores[ranked[0]] * 100);
+    const row = document.createElement('div');
+    row.className = 'rank-row' + (i === 0 ? ' first' : '');
+    row.innerHTML = '<span class="rk">' + (i+1) + '</span><span class="rn">' + name + '</span>' +
+                    '<span class="rb"><span class="rf" data-w="' + w + '"></span></span>' +
+                    '<span class="rs">' + scores[name] + '分</span>';
+    rankBox.appendChild(row);
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.rf').forEach(el => el.style.width = el.dataset.w + '%');
+  }, 300);
+}
+
+function restart(){
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-start').style.display = 'flex';
+}
+</script>
+</body>
+</html>
